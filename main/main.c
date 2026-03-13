@@ -144,6 +144,7 @@ static void sniff_task(void *arg)
                     uart_flush_input(SNIFF_UART);
                     frame_len = 0;
                     break;
+                    // test row from github copilot
 
                 default:
                     break;
