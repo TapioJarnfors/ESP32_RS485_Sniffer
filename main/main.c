@@ -41,8 +41,9 @@ static uint32_t frame_end_ts_us = 0;
 // UART event queue
 static QueueHandle_t uart_queue;
 
-static void write_record_to_pc(uint32_t ts_us, const uint8_t *data, uint16_t len)
+static void write_record_to_pc(uint32_t ts_us, uint8_t flags, const uint8_t *data, uint16_t len)
 {
+    // Header: sync(2) + ts(4) + flags(1) + len(2) = 9 bytes
     uint8_t hdr[8];
     hdr[0] = 0xA5;
     hdr[1] = 0x5A;
@@ -52,11 +53,13 @@ static void write_record_to_pc(uint32_t ts_us, const uint8_t *data, uint16_t len
     hdr[4] = (uint8_t)((ts_us >> 16) & 0xFF);
     hdr[5] = (uint8_t)((ts_us >> 24) & 0xFF);
 
-    hdr[6] = (uint8_t)(len & 0xFF);
-    hdr[7] = (uint8_t)((len >> 8) & 0xFF);
+//*    hdr[6] = flags; // flags reserved for future use
 
-//*    uart_write_bytes(OUT_UART, (const char *)hdr, sizeof(hdr));
-//*    uart_write_bytes(OUT_UART, (const char *)data, len);
+    hdr[7] = (uint8_t)(len & 0xFF);
+    hdr[8] = (uint8_t)((len >> 8) & 0xFF);
+
+    uart_write_bytes(OUT_UART, (const char *)hdr, sizeof(hdr));
+    uart_write_bytes(OUT_UART, (const char *)data, len);
 }
 
 // Standard Modbus CRC16 (poly 0xA001, init 0xFFFF)
@@ -73,26 +76,22 @@ static uint16_t modbus_crc16(const uint8_t *data, uint16_t len)
     return crc;
 }
 
-static void handle_frame(const uint8_t *frame, uint16_t len, uint32_t frame_start_us, uint32_t frame_end_us, uint32_t ts_end_us)
+static void handle_frame(const uint8_t *frame, uint16_t len, uint32_t frame_start_us, uint32_t frame_end_us)
 {
-    if (len < 4) return; // too short to be Modbus RTU (addr+func+crc)
-     
+    (void)frame_start_us;
+
+    if (len < 4) return;
+
     uint16_t rx_crc = (uint16_t)frame[len - 2] | ((uint16_t)frame[len - 1] << 8);
     uint16_t calc_crc = modbus_crc16(frame, (uint16_t)(len - 2));
     bool crc_ok = (rx_crc == calc_crc);
 
-    // Increment frame count
-    frame_count++;
+    uint8_t flags = 0;
+    if (crc_ok) {
+        flags |= 0x01; // bit0 = crc_ok
+    }
 
-    // Debug text (OK during bring-up; disable later for pure binary)
-    uint32_t frame_duration_us = frame_end_us - frame_start_us;
-    ESP_LOGI(TAG, "RTU frame len=%u crc=%s (rx=%04x calc=%04x)",
-             (unsigned)len, crc_ok ? "OK" : "BAD",
-             (unsigned)rx_crc, (unsigned)calc_crc);
-    ESP_LOG_BUFFER_HEX(TAG, frame, len);
-
-    // Start with: forward ALL frames (CRC good or bad)
-//*    write_record_to_pc(ts_end_us, frame, len);
+    write_record_to_pc(frame_end_us, flags, frame, len);
 }
 
 static void sniff_task(void *arg)
@@ -126,7 +125,7 @@ static void sniff_task(void *arg)
                     
                     // If no more data is available, this is the end of a frame (RX timeout occurred)
                     if (available == 0 && frame_len > 0) {
-                        handle_frame(frame, frame_len, frame_start_ts_us, frame_end_ts_us, frame_end_ts_us);
+                        handle_frame(frame, frame_len, frame_start_ts_us, frame_end_ts_us);
                         frame_len = 0;
                         frame_start_ts_us = 0;
                         frame_end_ts_us = 0;
