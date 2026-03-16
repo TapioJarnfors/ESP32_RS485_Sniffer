@@ -48,7 +48,7 @@ Below is a photo of the test setup:
 
 ## Example (Wireshark)
 
-![The screenshot shows Modbus RTU traffic with register names and values decoded, such as PV Array Input Voltage, Battery State of Charge, etc.](doc/wireshark-screenshot.png)
+![The screenshot shows Modbus RTU traffic with register names and values decoded, such as PV Array Input Voltage, Battery State of Charge, etc.](doc/wireshark-screenshot.jpg)
 
 ## Requirements
 - ESP32 development board
@@ -62,7 +62,7 @@ Below is a photo of the test setup:
 ---
 ## Project Status
 
-*This project enables detailed, real-time monitoring and reverse engineering of Modbus RTU traffic between solar controllers, with rich protocol decoding in Wireshark.*
+*This project enables detailed, real-time monitoring and reverse engineering of Modbus RTU traffic between solar controllers, with  protocol decoding in Wireshark.*
 
 Work in progress - to be continued one day...
 
