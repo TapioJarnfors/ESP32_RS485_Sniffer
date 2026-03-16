@@ -42,7 +42,7 @@ Below is a photo of the test setup:
 1. **Flash the ESP32** with the firmware in `main.c`.
 2. **Connect ESP32 USB** to your PC and use the SolarGuardian for communication to the Epever Tracer.
 3. **Connect the ESP32** to the RS-485 bus (RX to data line, GND to ground), it will automatically capture the communication and send to PC
-4. Start `python sniffer_to_pcapng_raw.py` for saving the data as a `.pcapng` file.
+4. **Start** `python sniffer_to_pcapng_raw.py` for saving the data as a `.pcapng` file.
 5. **Open the capture in Wireshark**. Enable the Lua script (`modbus_register_names.lua`) in Wireshark.
 6. **Analyze**: Human-readable register names and values will appear in the packet details and Info column (see screenshot for example).
 
