@@ -1,6 +1,6 @@
 # ESP32 RS485 Modbus RTU Sniffer for Solar Guardian & Epever Tracer 1210A
 
-This project is designed to sniff Modbus RTU traffic between a Solar Guardian and an Epever Tracer 1210A solar charge controller using an ESP32. The captured data is sent to a PC, where it can be logged as a Wireshark-compatible `.pcapng` file. A custom Lua script for Wireshark is provided to decode and present the Modbus register data in a human-readable format.
+This project is designed to sniff Modbus RTU traffic between a Solar Guardian and an Epever Tracer 1210A solar charge controller using an ESP32. Data is captured by ESP32 and sent to the PC, where it's saved as a Wireshark-compatible `.pcapng` file by Python code. The data file is opened by Wireshark and decoded in a human-readable format.
 
 ## Hardware Used
 
@@ -21,6 +21,8 @@ Below is a photo of the test setup:
   - Detects Modbus RTU frame boundaries using UART idle detection.
   - Validates CRC and timestamps each frame.
   - Forwards raw frames with metadata to the PC over USB serial (UART0).
+- **Conversion to Wireshark compatible file** (`sniffer_to_pcapng_raw.py`):
+  - Data from UART0 is saved as a Wireshark compatible `.pcapng` format.
 - **Wireshark Lua script** (`modbus_register_names.lua`):
   - Decodes Modbus register numbers and values for Epever Tracer 1210A.
   - Displays register names, scaling, and units for easy analysis.
@@ -28,23 +30,25 @@ Below is a photo of the test setup:
 
 ## How It Works
 1. **Sniffing**: The ESP32 listens passively on the RS-485 bus, capturing all Modbus RTU frames between the Solar Guardian and the Epever Tracer.
-2. **Logging**: Captured frames are sent to the PC via USB serial and saved as a `.pcapng` file (using a suitable serial-to-pcap tool or custom logger).
+2. **Logging**: Captured frames are sent to the PC via USB serial and saved as a `.pcapng` file.
 3. **Analysis**: Open the `.pcapng` file in Wireshark with the provided Lua script enabled. The script decodes register values and presents them with descriptive names and units.
 
 ## File Overview
 - `main/main.c`: ESP32 firmware for sniffing and forwarding Modbus RTU frames.
+- `sniffer_to_pcapng_raw.py`: Python script for receiving RTU frames and saving as a Wireshark `.pcapng` format.
 - `modbus_register_names.lua`: Wireshark Lua script for decoding Epever Tracer 1210A Modbus registers.
 
 ## Usage
 1. **Flash the ESP32** with the firmware in `main.c`.
-2. **Connect the ESP32** to the RS-485 bus (RX to data line, GND to ground).
-3. **Connect ESP32 USB** to your PC. Use a serial logger or custom tool to capture the output and save as `.pcapng`.
-4. **Open the capture in Wireshark**. Enable the Lua script (`modbus_register_names.lua`) in Wireshark.
-5. **Analyze**: Human-readable register names and values will appear in the packet details and Info column (see screenshot for example).
+2. **Connect ESP32 USB** to your PC and use the SolarGuardian for communication to the Epever Tracer.
+3. **Connect the ESP32** to the RS-485 bus (RX to data line, GND to ground), it will automatically capture the communication and send to PC
+4. Start `python sniffer_to_pcapng_raw.py` for saving the data as a `.pcapng` file.
+5. **Open the capture in Wireshark**. Enable the Lua script (`modbus_register_names.lua`) in Wireshark.
+6. **Analyze**: Human-readable register names and values will appear in the packet details and Info column (see screenshot for example).
 
 ## Example (Wireshark)
 
-![The screenshot shows Modbus RTU traffic with register names and values decoded, such as PV Array Input Voltage, Battery State of Charge, etc.](doc/wireshark-screenshot.jpg.png)
+![The screenshot shows Modbus RTU traffic with register names and values decoded, such as PV Array Input Voltage, Battery State of Charge, etc.](doc/wireshark-screenshot.png)
 
 ## Requirements
 - ESP32 development board
