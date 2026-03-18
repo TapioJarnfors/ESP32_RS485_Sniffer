@@ -32,7 +32,6 @@ static const char *TAG = "rtu_sniffer";
 
 // Frame buffer limits
 #define RTU_FRAME_MAX      512
-#define DEBUG              false
 
 // Frame tracking
 static uint32_t frame_count = 0;
@@ -45,7 +44,7 @@ static QueueHandle_t uart_queue;
 static void write_record_to_pc(uint32_t ts_us, uint8_t flags, const uint8_t *data, uint16_t len)
 {
     // Header: sync(2) + ts(4) + flags(1) + len(2) = 9 bytes
-    uint8_t hdr[9];
+    uint8_t hdr[8];
     hdr[0] = 0xA5;
     hdr[1] = 0x5A;
 
@@ -54,20 +53,13 @@ static void write_record_to_pc(uint32_t ts_us, uint8_t flags, const uint8_t *dat
     hdr[4] = (uint8_t)((ts_us >> 16) & 0xFF);
     hdr[5] = (uint8_t)((ts_us >> 24) & 0xFF);
 
-    hdr[6] = flags;
+//*    hdr[6] = flags; // flags reserved for future use
 
     hdr[7] = (uint8_t)(len & 0xFF);
     hdr[8] = (uint8_t)((len >> 8) & 0xFF);
 
-//*    if (DEBUG == true) {
-//*        ESP_LOGI(TAG, "Frame %u: ts=%u us, flags=0x%02X, len=%u", frame_count++, ts_us, flags, len);
-//*        ESP_LOG_BUFFER_HEXDUMP(TAG, hdr, sizeof(hdr), ESP_LOG_INFO);
-//*        ESP_LOG_BUFFER_HEXDUMP(TAG, data, len, ESP_LOG_INFO);
-//*    }   
-//*    else {
     uart_write_bytes(OUT_UART, (const char *)hdr, sizeof(hdr));
     uart_write_bytes(OUT_UART, (const char *)data, len);
-//*    }
 }
 
 // Standard Modbus CRC16 (poly 0xA001, init 0xFFFF)

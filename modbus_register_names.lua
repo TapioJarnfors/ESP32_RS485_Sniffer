@@ -93,27 +93,13 @@ local discrete_inputs = {
 
 ----------------------------------------------------------------------
 --  BITMAPPED REGISTER DEFINITIONS
+--  NOTE: These are for HOLDING REGISTERS (function codes 3/4), NOT discrete inputs (function code 2)
+--  Discrete inputs have their own bit-by-bit decoding logic in the dissector
 ----------------------------------------------------------------------
 
 local bitfields = {
-    [0x2000] = {
-        { mask=0x8000, shift=15, name="0x2000 bit 15 not in use", values={[0]="0",[1]="1"} },
-        { mask=0x4000, shift=14, name="0x2000 bit 14 not in use", values={[0]="0",[1]="1"} },
-        { mask=0x2000, shift=13, name="0x2000 bit 13 not in use", values={[0]="0",[1]="1"} },
-        { mask=0x1000, shift=12, name="0x2000 bit 12 not in use", values={[0]="0",[1]="1"} },
-        { mask=0x0800, shift=11, name="0x2000 bit 11 not in use", values={[0]="0",[1]="1"} },
-        { mask=0x0400, shift=10, name="0x2000 bit 10 not in use", values={[0]="0",[1]="1"} },
-        { mask=0x0200, shift=9,  name="0x2000 bit 9 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0100, shift=8,  name="0x2000 bit 8 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0080, shift=7,  name="0x2000 bit 7 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0040, shift=6,  name="0x2000 bit 6 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0020, shift=5,  name="0x2000 bit 5 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0010, shift=4,  name="0x2000 bit 4 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0008, shift=3,  name="0x2000 bit 3 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0004, shift=2,  name="0x2000 bit 2 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0002, shift=1,  name="0x2000 bit 1 not in use",  values={[0]="0",[1]="1"} },
-        { mask=0x0001, shift=0,  name="Over Temperature",  values={[0]="No",[1]="Yes"} },
-    }, 
+    -- [0x2000] entry removed - it was causing incorrect decoding for discrete inputs
+    -- If you need bitfield decoding for a holding register at 0x2000, restore it here 
     [0x3200] = {
         { mask=0x8000, shift=15, name="Wrong rated voltage ID", values={[0]="NO",[1]="YES"} },
         { mask=0x0100, shift=8,  name="Battery inner resistance abnormal", values={[0]="NO",[1]="YES"} },
